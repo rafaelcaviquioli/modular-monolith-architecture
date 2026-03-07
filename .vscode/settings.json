@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^mkdir -p /Users/rafael/Projects/modular-monolith/ModularMonolith/\\.github/agents$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
