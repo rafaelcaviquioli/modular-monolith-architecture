@@ -9,25 +9,25 @@
 
 ## Architecture
 
-Modular monolith. See [readme.md](../readme.md) for full architecture documentation.
+Modular monolith with a **single assembly** (`Monolith`). All modules live in `src/Monolith/Modules/`. Building blocks live in `src/Monolith/BuildingBlocks/`. See [readme.md](../readme.md) for full architecture documentation.
 
-- **Modules are independent**: each owns Domain, Application, Infrastructure, API, and its own DbContext/schema
-- **Cross-module communication**: only via Contracts projects (sync) or Integration Events (async through Wolverine)
+- **Modules are independent**: each owns Domain, Application, Infrastructure, API, and Contracts (public DTOs/events/interfaces) — all within the single assembly
+- **Cross-module communication**: only via `Modules/*/Contracts/` namespaces (sync) or Integration Events (async through Wolverine)
 - **Dependency direction**: `API → Application → Domain`. `Infrastructure → Application`. Domain is pure — no framework dependencies.
-- **Visibility**: module internals are `internal`. Only Contracts types and module entry points are `public`.
+- **Visibility**: module implementations are `internal`. Only `Contracts` types and `XxxModule.cs` entry points are `public`.
 
 ## Conventions
 
 - Wolverine handler classes: suffix `Handler`, methods `Handle` / `HandleAsync`
 - Commands: `IMessageBus.InvokeAsync()`. Queries: `IMessageBus.InvokeAsync<TResult>()`. Events: `IMessageBus.PublishAsync()`
-- Each module assembly has `[assembly: WolverineModule]` for handler discovery
-- Module registration: `services.AddXxxModule(configuration)` / `app.UseXxxModule()` extension methods
-- Integration events are plain records in `.Contracts` projects — no marker interfaces
-- `InternalsVisibleTo` only for the module's own test project
+- `[assembly: WolverineModule]` declared once in `AssemblyInfo.cs` (single assembly)
+- Module registration: `services.AddXxxModule(configuration)` extension methods in `XxxModule.cs`
+- Integration events are plain records in `Modules/*/Contracts/IntegrationEvents/` — no marker interfaces
+- `[assembly: InternalsVisibleTo("Monolith.Tests")]` declared once in `AssemblyInfo.cs`
 
 ## Build and Test
 
 ```bash
-dotnet build ModularMonolith.sln
+dotnet build ModularMonolith.slnx
 dotnet test
 ```

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/Monolith/Monolith.csproj" />
+  <Project Path="tests/Monolith.Tests/Monolith.Tests.csproj" />
+</Solution>

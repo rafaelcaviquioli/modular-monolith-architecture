@@ -1,53 +1,6 @@
 # Modular Monolith Architecture (.NET)
 
-This repository implements a **Modular Monolith** architecture using .NET 10.
-The goal is to achieve **strong modular boundaries**, **clear domain separation**, and **microservice-ready modules** while still deploying a **single application**.
-
-The architecture combines:
-
-- Domain-Driven Design (DDD)
-- CQRS via Wolverine
-- Domain Events / Integration Events via Wolverine
-- Multiple EF Core DbContexts (one per module)
-- Explicit module contracts
-- Enforced architectural boundaries
-
----
-
-# High-Level Architecture
-
-- **Single deployable application**
-- **Multiple independent modules**
-- Each module owns:
-  - Domain
-  - Application logic
-  - Infrastructure
-  - Database schema (separate EF Core DbContext)
-- Modules communicate via:
-  - **Contracts** (synchronous, via `IMessageBus.InvokeAsync`)
-  - **Integration Events** (asynchronous, via `IMessageBus.PublishAsync`)
-
----
-
-# Solution Structure
-
-```
-ModularMonolith.sln
-
-
-src/
-├── Monolith.Bootstrapper/                      ← Single executable; wires all modules + Wolverine
-│
-├── BuildingBlocks/
-│   ├── Monolith.BuildingBlocks.Domain          ← Entity, AggregateRoot, ValueObject, IDomainEvent
-│   ├── Monolith.BuildingBlocks.Application     ← ICommand, IQuery marker interfaces
-│   └── Monolith.BuildingBlocks.Infrastructure  ← IDbConnectionFactory
-│
-└── Modules/
-    ├── Orders/
-    │   ├── Monolith.Modules.Orders             ← internal: Domain, Application, Infrastructure, API
-    │   └── Monolith.Modules.Orders.Contracts   ← public: DTOs, Requests, IOrdersModule, integration events
-    │
+See the root [readme.md](../readme.md) for full architecture documentation.
     └── Users/
         ├── Monolith.Modules.Users              ← internal: Domain, Application, Infrastructure, API
         └── Monolith.Modules.Users.Contracts    ← public: DTOs, Requests, IUsersModule, integration events
