@@ -174,30 +174,35 @@ public class ModuleArchitectureTests
     }
 
     /// <summary>
-    /// All application handler classes must follow the *Handler naming suffix convention
+    /// All Wolverine handler classes must follow the *Handler naming suffix convention
     /// required by Wolverine for handler discovery.
+    /// Covers Features, DomainEventHandlers, and IntegrationEventHandlers namespaces.
     /// </summary>
     [Fact]
-    public void ApplicationHandlers_ShouldHave_HandlerSuffix()
+    public void Handlers_ShouldHave_HandlerSuffix()
     {
+        var handlerNamespaces = new[] { "Features", "DomainEventHandlers", "IntegrationEventHandlers" };
+
         foreach (var module in ModuleNamespaces)
         {
-            // Types that declare Handle/HandleAsync should be named *Handler
-            var result = Types
-                .InAssembly(MonolithAssembly)
-                .That()
-                .ResideInNamespaceStartingWith($"{module}.Application")
-                .And()
-                .MeetCustomRule(new HasHandleMethodRule())
-                .Should()
-                .HaveNameEndingWith("Handler")
-                .GetResult();
+            foreach (var ns in handlerNamespaces)
+            {
+                var result = Types
+                    .InAssembly(MonolithAssembly)
+                    .That()
+                    .ResideInNamespaceStartingWith($"{module}.{ns}")
+                    .And()
+                    .MeetCustomRule(new HasHandleMethodRule())
+                    .Should()
+                    .HaveNameEndingWith("Handler")
+                    .GetResult();
 
-            Assert.True(
-                result.IsSuccessful,
-                $"[{module}.Application] contains handler classes not using the *Handler suffix: "
-                    + string.Join(", ", result.FailingTypeNames ?? [])
-            );
+                Assert.True(
+                    result.IsSuccessful,
+                    $"[{module}.{ns}] contains handler classes not using the *Handler suffix: "
+                        + string.Join(", ", result.FailingTypeNames ?? [])
+                );
+            }
         }
     }
 }
