@@ -44,20 +44,21 @@ src/
     │
     └── Modules/
         ├── Orders/
-        │   ├── Contracts/      ← public: DTOs, Requests, IOrdersModule, integration events
+        │   ├── Contracts/      ← public: DTOs, IOrdersModule, integration events
         │   ├── Domain/
-        │   ├── Application/
+        │   ├── DomainEventHandlers/
+        │   ├── Features/
         │   ├── Infrastructure/
-        │   ├── API/
         │   ├── OrdersModule.cs
         │   └── OrdersModuleService.cs
         │
         └── Users/
-            ├── Contracts/      ← public: DTOs, Requests, IUsersModule, integration events
+            ├── Contracts/      ← public: DTOs, IUsersModule, integration events
             ├── Domain/
-            ├── Application/
+            ├── DomainEventHandlers/
+            ├── Features/
             ├── Infrastructure/
-            ├── API/
+            ├── IntegrationEventHandlers/
             ├── UsersModule.cs
             └── UsersModuleService.cs
 
@@ -79,38 +80,39 @@ Each module represents a **business capability** and is **independent** from oth
 Monolith/Modules/Orders/
 │
 ├── Contracts/
-│   ├── Dtos/OrderDto.cs
-│   ├── Requests/CreateOrderRequest.cs
+│   ├── Dtos/
+│   │   ├── CreateOrderDto.cs
+│   │   └── GetOrderDto.cs
 │   ├── Services/IOrdersModule.cs
 │   └── IntegrationEvents/OrderPlacedIntegrationEvent.cs
-│
-├── API/
-│   └── OrdersController.cs              ← internal; uses IMessageBus
-│
-├── Application/
-│   ├── Commands/PlaceOrder/
-│   │   ├── PlaceOrderCommand.cs
-│   │   └── PlaceOrderCommandHandler.cs
-│   ├── Queries/GetOrder/
-│   │   ├── GetOrderQuery.cs
-│   │   └── GetOrderQueryHandler.cs
-│   ├── DomainEventHandlers/
-│   │   └── OrderPlacedDomainEventHandler.cs   ← publishes integration event
-│   └── IntegrationEventHandlers/
-│       └── (handlers for events from other modules)
 │
 ├── Domain/
 │   ├── Entities/Order.cs
 │   ├── Enums/OrderStatus.cs
 │   └── DomainEvents/OrderPlacedDomainEvent.cs
 │
+├── DomainEventHandlers/
+│   └── OrderPlacedDomainEventHandler.cs   ← publishes integration event
+│
+├── Features/
+│   ├── PlaceOrder/
+│   │   ├── PlaceOrderCommand.cs
+│   │   ├── PlaceOrderCommandHandler.cs
+│   │   └── PlaceOrderController.cs
+│   └── GetOrder/
+│       ├── GetOrderQuery.cs
+│       ├── GetOrderQueryHandler.cs
+│       ├── GetOrderResponse.cs
+│       └── GetOrderController.cs
+│
 ├── Infrastructure/
 │   └── Persistence/
 │       ├── OrdersDbContext.cs
-│       └── Configurations/OrderConfiguration.cs
+│       ├── OrderConfiguration.cs
+│       └── Migrations/
 │
 ├── OrdersModule.cs                      ← public; AddOrdersModule() extension
-└── OrdersModuleService.cs               ← internal; IOrdersModule implementation
+└── OrdersModuleService.cs               ← IOrdersModule implementation
 ```
 
 Each module contains **everything needed to implement the business logic of that domain**.
@@ -126,8 +128,9 @@ Instead, they use **Contracts** — a sub-namespace within the module's folder w
 ```
 Monolith/Modules/Orders/Contracts/
 │
-├── Dtos/OrderDto.cs
-├── Requests/CreateOrderRequest.cs
+├── Dtos/
+│   ├── CreateOrderDto.cs
+│   └── GetOrderDto.cs
 ├── Services/IOrdersModule.cs
 └── IntegrationEvents/OrderPlacedIntegrationEvent.cs
 ```
@@ -139,14 +142,14 @@ public record OrderPlacedIntegrationEvent(
     Guid OrderId, string CustomerName, decimal TotalAmount, DateTime OccurredOn);
 ```
 
-Other modules reference only types from `*.Contracts.*` namespaces, never from a module's internal namespaces like `*.Domain`, `*.Application`, or `*.Infrastructure`.
+Other modules reference only types from `*.Contracts.*` namespaces, never from a module's internal namespaces like `*.Domain`, `*.Features`, or `*.Infrastructure`.
 
 ## Contract Service vs Command (Important)
 
 In this architecture, a **contract service** (for example `IOrdersModule`) is a **module boundary API**.
 It is not the same concept as an Application Service from classic layered architecture.
 
-- **Contract service**: public interface in `*.Contracts` used by other modules. It exposes module capabilities in stable DTO/request types.
+- **Contract service**: public interface in `*.Contracts` used by other modules. It exposes module capabilities in stable DTO types.
 - **Command / Query**: internal application message handled by Wolverine inside the owning module.
 
 Think of it as:
@@ -158,9 +161,9 @@ Concrete mapping in this codebase:
 
 | Boundary API (Contracts) | Internal message (Application) |
 |---|---|
-| `IOrdersModule.PlaceOrderAsync(CreateOrderRequest)` | `PlaceOrderCommand` |
+| `IOrdersModule.PlaceOrderAsync(CreateOrderDto)` | `PlaceOrderCommand` |
 | `IOrdersModule.GetOrderAsync(Guid)` | `GetOrderQuery` |
-| `IUsersModule.CreateUserAsync(CreateUserRequest)` | `CreateUserCommand` |
+| `IUsersModule.CreateUserAsync(CreateUserDto)` | `CreateUserCommand` |
 | `IUsersModule.GetUserAsync(Guid)` | `GetUserQuery` |
 
 This separation gives two benefits:
@@ -324,7 +327,8 @@ Infrastructure belongs to the **module that owns the domain**.
 Monolith/Modules/Orders/Infrastructure/
   └── Persistence/
       ├── OrdersDbContext.cs
-      └── Configurations/OrderConfiguration.cs
+      ├── OrderConfiguration.cs
+      └── Migrations/
 ```
 
 There is **no shared infrastructure layer for modules**.
@@ -351,12 +355,11 @@ tests/
 
 | Rule | Description |
 |---|---|
-| Module isolation | Internal types (`Domain`, `Application`, `Infrastructure`, `API`) must not depend on another module's internals — only `*.Contracts.*` may cross module boundaries |
+| Module isolation | Types in `Domain`, `Features`, `DomainEventHandlers`, `IntegrationEventHandlers`, and `Infrastructure` must not depend on another module's internals — only `*.Contracts.*` may cross module boundaries |
 | Pure domain | Domain types must have zero dependencies on EF Core, Wolverine, or ASP.NET Core |
-| Layer flow | `Application` must not depend on `Infrastructure` or `API` within the same module |
-| Domain boundary | Domain must not depend on `Application`, `Infrastructure`, or `API` |
-| Contracts purity | Contracts must not expose domain types — only DTOs, requests, and integration events |
-| Handler convention | Application handler classes must use the `*Handler` naming suffix (Wolverine discovery) |
+| Domain boundary | Domain must not depend on `Features`, `Infrastructure`, or outer layers |
+| Contracts purity | Contracts must not expose domain types — only DTOs and integration events |
+| Handler convention | Handler classes in `Features`, `DomainEventHandlers`, and `IntegrationEventHandlers` must use the `*Handler` naming suffix (Wolverine discovery) |
 
 To add a new module, add its root namespace to `ModuleNamespaces` in `Architecture/ModuleArchitectureTests.cs`.
 
@@ -364,18 +367,6 @@ Run all tests:
 
 ```bash
 dotnet test ModularMonolith.slnx
-```
-
----
-
-# Internal Module Boundaries
-
-All implementation types inside a module are `internal`. Only the module registration entry point (`XxxModule.cs`) and Contracts types are `public`.
-
-```csharp
-public class Order : AggregateRoot<Guid> { }
-public class PlaceOrderCommandHandler { }
-public class OrdersDbContext : DbContext { }
 ```
 
 ---
@@ -398,7 +389,7 @@ Declared once in `AssemblyInfo.cs`:
 
 ```
 Users → Orders.Domain        ❌
-Users → Orders.Application   ❌
+Users → Orders.Features      ❌
 Users → Orders.Contracts     ✅
 ```
 
@@ -407,12 +398,6 @@ Users → Orders.Contracts     ✅
 ```
 Domain → Microsoft.EntityFrameworkCore  ❌
 Domain → WolverineFx                    ❌
-```
-
-### Application cannot depend on API
-
-```
-Application → API ❌
 ```
 
 ### Dependency direction
@@ -428,7 +413,6 @@ Infrastructure → Application
 
 1. **Modules own their domain and data** — no shared DbContexts across modules
 2. **Communicate via contracts or integration events** — never via internal types
-3. **Internal by default** — implementation details stay hidden
-4. **Wolverine for all messaging** — commands, queries, domain events, integration events; no MediatR
-5. **Infrastructure stays inside modules** — no shared infrastructure projects
-6. **readme.md is always current** — docs describe what IS, not what could be
+3. **Wolverine for all messaging** — commands, queries, domain events, integration events; no MediatR
+4. **Infrastructure stays inside modules** — no shared infrastructure projects
+5. **readme.md is always current** — docs describe what IS, not what could be
