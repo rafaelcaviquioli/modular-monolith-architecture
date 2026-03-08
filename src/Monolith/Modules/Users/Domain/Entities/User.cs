@@ -3,7 +3,7 @@ using Monolith.Modules.Users.Domain.DomainEvents;
 
 namespace Monolith.Modules.Users.Domain.Entities;
 
-internal class User : AggregateRoot<Guid>
+public class User : AggregateRoot<Guid>
 {
     public string Email { get; private set; } = string.Empty;
     public string FullName { get; private set; } = string.Empty;

@@ -1,17 +1,16 @@
-using Monolith.Modules.Users.Application.Commands.CreateUser;
-using Monolith.Modules.Users.Application.Queries.GetUser;
 using Monolith.Modules.Users.Contracts.Dtos;
-using Monolith.Modules.Users.Contracts.Requests;
 using Monolith.Modules.Users.Contracts.Services;
+using Monolith.Modules.Users.Features.CreateUser;
+using Monolith.Modules.Users.Features.GetUser;
 using Wolverine;
 
 namespace Monolith.Modules.Users;
 
-internal class UsersModuleService(IMessageBus bus) : IUsersModule
+public class UsersModuleService(IMessageBus bus) : IUsersModule
 {
-    public Task<Guid> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken = default) =>
-        bus.InvokeAsync<Guid>(new CreateUserCommand(request.Email, request.FullName), cancellationToken);
+    public Task<Guid> CreateUserAsync(CreateUserDto dto, CancellationToken cancellationToken = default) =>
+        bus.InvokeAsync<Guid>(new CreateUserCommand(dto.Email, dto.FullName), cancellationToken);
 
-    public Task<UserDto?> GetUserAsync(Guid userId, CancellationToken cancellationToken = default) =>
-        bus.InvokeAsync<UserDto?>(new GetUserQuery(userId), cancellationToken);
+    public Task<GetUserDto?> GetUserAsync(Guid userId, CancellationToken cancellationToken = default) =>
+        bus.InvokeAsync<GetUserDto?>(new GetUserQuery(userId), cancellationToken);
 }

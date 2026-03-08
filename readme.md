@@ -194,7 +194,66 @@ Benefits:
 - Independent migrations
 - Clear transaction boundaries
 
-Dev uses `InMemory` provider. Prod uses SQL Server or Postgres — swap the provider in `AddXxxModule()` and add `PersistMessages*` in the Wolverine outbox config.
+This repo uses PostgreSQL via `Npgsql` in both environments, with a shared database and module schemas (`orders`, `users`).
+
+## EF Core Migrations
+
+Run commands from the repository root (`ModularMonolith/`).
+
+Install tools (first time only):
+
+```bash
+dotnet tool restore
+```
+
+Start PostgreSQL from `docker-compose.yaml`:
+
+```bash
+docker compose up -d postgres
+```
+
+Create a migration for Orders:
+
+```bash
+dotnet tool run dotnet-ef migrations add <MigrationName> \
+    --project src/Monolith/Monolith.csproj \
+    --startup-project src/Monolith/Monolith.csproj \
+    --context Monolith.Modules.Orders.Infrastructure.Persistence.OrdersDbContext \
+    --output-dir Modules/Orders/Infrastructure/Persistence/Migrations
+```
+
+Create a migration for Users:
+
+```bash
+dotnet tool run dotnet-ef migrations add <MigrationName> \
+    --project src/Monolith/Monolith.csproj \
+    --startup-project src/Monolith/Monolith.csproj \
+    --context Monolith.Modules.Users.Infrastructure.Persistence.UsersDbContext \
+    --output-dir Modules/Users/Infrastructure/Persistence/Migrations
+```
+
+Apply migrations to database:
+
+```bash
+dotnet tool run dotnet-ef database update \
+    --project src/Monolith/Monolith.csproj \
+    --startup-project src/Monolith/Monolith.csproj \
+    --context Monolith.Modules.Orders.Infrastructure.Persistence.OrdersDbContext
+
+dotnet tool run dotnet-ef database update \
+    --project src/Monolith/Monolith.csproj \
+    --startup-project src/Monolith/Monolith.csproj \
+    --context Monolith.Modules.Users.Infrastructure.Persistence.UsersDbContext
+```
+
+Remove the last migration (before applying it):
+
+```bash
+dotnet tool run dotnet-ef migrations remove \
+    --project src/Monolith/Monolith.csproj \
+    --startup-project src/Monolith/Monolith.csproj \
+    --context Monolith.Modules.Orders.Infrastructure.Persistence.OrdersDbContext
+```
 
 There is **no shared infrastructure layer** between modules.
 
@@ -314,9 +373,9 @@ dotnet test ModularMonolith.slnx
 All implementation types inside a module are `internal`. Only the module registration entry point (`XxxModule.cs`) and Contracts types are `public`.
 
 ```csharp
-internal class Order : AggregateRoot<Guid> { }
-internal class PlaceOrderCommandHandler { }
-internal class OrdersDbContext : DbContext { }
+public class Order : AggregateRoot<Guid> { }
+public class PlaceOrderCommandHandler { }
+public class OrdersDbContext : DbContext { }
 ```
 
 ---

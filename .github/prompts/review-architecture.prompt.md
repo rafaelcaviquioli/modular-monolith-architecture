@@ -19,7 +19,6 @@ Review the entire solution for architecture rule violations. Check every module 
 - Flow: `API → Application → Domain`, `Infrastructure → Application`
 
 ### Visibility
-- Domain entities, handlers, repositories, DbContexts, controllers are `internal`
 - Only Contracts types and module registration entry points are `public`
 - `InternalsVisibleTo` only targets the module's own test project
 

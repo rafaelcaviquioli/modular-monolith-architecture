@@ -1,17 +1,20 @@
-using Monolith.Modules.Orders.Application.Commands.PlaceOrder;
-using Monolith.Modules.Orders.Application.Queries.GetOrder;
 using Monolith.Modules.Orders.Contracts.Dtos;
-using Monolith.Modules.Orders.Contracts.Requests;
 using Monolith.Modules.Orders.Contracts.Services;
+using Monolith.Modules.Orders.Features.GetOrder;
+using Monolith.Modules.Orders.Features.PlaceOrder;
 using Wolverine;
 
 namespace Monolith.Modules.Orders;
 
-internal class OrdersModuleService(IMessageBus bus) : IOrdersModule
+public class OrdersModuleService(IMessageBus bus) : IOrdersModule
 {
-    public Task<Guid> PlaceOrderAsync(CreateOrderRequest request, CancellationToken cancellationToken = default) =>
-        bus.InvokeAsync<Guid>(new PlaceOrderCommand(request.CustomerName, request.TotalAmount), cancellationToken);
+    public Task<Guid> PlaceOrderAsync(CreateOrderDto dto, CancellationToken cancellationToken = default) =>
+        bus.InvokeAsync<Guid>(new PlaceOrderCommand(dto.CustomerName, dto.TotalAmount), cancellationToken);
 
-    public Task<OrderDto?> GetOrderAsync(Guid orderId, CancellationToken cancellationToken = default) =>
-        bus.InvokeAsync<OrderDto?>(new GetOrderQuery(orderId), cancellationToken);
+    public async Task<GetOrderDto?> GetOrderAsync(Guid orderId, CancellationToken cancellationToken = default)
+    {
+        var response = await bus.InvokeAsync<GetOrderResponse?>(new GetOrderQuery(orderId), cancellationToken);
+        if (response is null) return null;
+        return new GetOrderDto(response.Id, response.CustomerName, response.TotalAmount, response.Status);
+    }
 }

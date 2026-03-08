@@ -12,9 +12,12 @@ public static class UsersModule
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+
         services.AddDbContext<UsersDbContext>(options =>
-            options.UseInMemoryDatabase("UsersDb"),
-            optionsLifetime: ServiceLifetime.Singleton);
+            options.UseNpgsql(connectionString), optionsLifetime:ServiceLifetime.Singleton
+        );
 
         services.AddScoped<IUsersModule, UsersModuleService>();
 

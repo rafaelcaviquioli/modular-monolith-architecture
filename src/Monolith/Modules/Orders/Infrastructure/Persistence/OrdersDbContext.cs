@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Monolith.Modules.Orders.Domain.Entities;
-using Monolith.Modules.Orders.Infrastructure.Persistence.Configurations;
 
 namespace Monolith.Modules.Orders.Infrastructure.Persistence;
 

@@ -1,4 +1,3 @@
-using Monolith.Modules.Orders.Domain.DomainEvents;
 using Monolith.Modules.Orders.Domain.Entities;
 using Monolith.Modules.Orders.Domain.Enums;
 using Xunit;

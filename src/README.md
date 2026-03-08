@@ -232,7 +232,7 @@ Most classes inside modules are **internal**.
 Example:
 
 ```csharp
-internal class Order
+public class Order
 ```
 
 This prevents other modules from accessing internal implementation.

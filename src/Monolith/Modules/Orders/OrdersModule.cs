@@ -1,6 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Monolith.Modules.Orders.Contracts.Services;
 using Monolith.Modules.Orders.Infrastructure.Persistence;
 
@@ -10,10 +8,13 @@ public static class OrdersModule
 {
     public static IServiceCollection AddOrdersModule(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<OrdersDbContext>(
-            options => options.UseInMemoryDatabase("OrdersDb"),
-            optionsLifetime: ServiceLifetime.Singleton
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+
+        services.AddDbContext<OrdersDbContext>(options =>
+            options.UseNpgsql(connectionString), optionsLifetime:ServiceLifetime.Singleton
         );
+
         services.AddScoped<IOrdersModule, OrdersModuleService>();
 
         return services;
