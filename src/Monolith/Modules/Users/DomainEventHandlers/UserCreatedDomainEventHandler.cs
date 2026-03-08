@@ -3,7 +3,7 @@ using Monolith.Modules.Users.Domain.DomainEvents;
 
 namespace Monolith.Modules.Users.DomainEventHandlers;
 
-public class PublishUserCreatedIntegrationEventHandler
+public class UserCreatedDomainEventHandler
 {
     public UserCreatedIntegrationEvent Handle(UserCreatedDomainEvent domainEvent) =>
         new(domainEvent.UserId, domainEvent.Email, domainEvent.FullName, DateTime.UtcNow);

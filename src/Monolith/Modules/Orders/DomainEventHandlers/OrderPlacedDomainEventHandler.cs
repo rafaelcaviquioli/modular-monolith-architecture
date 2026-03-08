@@ -5,8 +5,11 @@ namespace Monolith.Modules.Orders.DomainEventHandlers;
 
 public class OrderPlacedDomainEventHandler
 {
-    public OrderPlacedIntegrationEvent Handle(OrderPlacedDomainEvent domainEvent)
-    {
-        return new(domainEvent.OrderId, domainEvent.CustomerName, domainEvent.TotalAmount, DateTime.UtcNow);
-    }
+    public OrderPlacedIntegrationEvent Handle(OrderPlacedDomainEvent domainEvent) =>
+        new(
+            domainEvent.OrderId,
+            domainEvent.CustomerName,
+            domainEvent.TotalAmount,
+            DateTime.UtcNow
+        );
 }

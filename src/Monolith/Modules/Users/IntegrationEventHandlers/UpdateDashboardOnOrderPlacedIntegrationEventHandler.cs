@@ -11,6 +11,8 @@ namespace Monolith.Modules.Users.IntegrationEventHandlers;
 /// </summary>
 public class UpdateDashboardOnOrderPlacedIntegrationEventHandler(ILogger<UpdateDashboardOnOrderPlacedIntegrationEventHandler> logger)
 {
+    // TODO: Find a better solution for this use case because it might generate a inconsistent result in case of event failure and retry due to race conditions.
+    // Two events executed at the same time will obtain a empty dashboard state from the database, resulting in creating two dashboards records for the same day.
     public async Task HandleAsync(OrderPlacedIntegrationEvent @event, IMessageBus bus, CancellationToken cancellationToken)
     {
         logger.LogInformation(

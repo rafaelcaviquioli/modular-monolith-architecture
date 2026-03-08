@@ -31,6 +31,8 @@ builder.Host.UseWolverine(opts =>
     // Make sure that multiple event handlers for the same event are executed in separate transactions and errors in one handler don't affect the others
     opts.MultipleHandlerBehavior = MultipleHandlerBehavior.Separated;
     opts.Policies.AutoApplyTransactions();
+    
+    opts.Policies.UseDurableLocalQueues();
 
     // Where and how to store messages as part of the transactional inbox/outbox
     opts.PersistMessagesWithPostgresql(
@@ -41,6 +43,9 @@ builder.Host.UseWolverine(opts =>
     // Adding EF Core transactional middleware, saga support,
     // and EF Core support for Wolverine storage operations
     opts.UseEntityFrameworkCoreTransactions();
+
+    opts.Policies.UseDurableOutboxOnAllSendingEndpoints();
+    opts.Policies.UseDurableInboxOnAllListeners();
 });
 builder.Host.UseResourceSetupOnStartup();
 

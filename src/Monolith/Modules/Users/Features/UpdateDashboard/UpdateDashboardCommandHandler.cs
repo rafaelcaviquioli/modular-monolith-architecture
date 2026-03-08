@@ -17,11 +17,10 @@ public class UpdateDashboardCommandHandler(UsersDbContext dbContext)
             await dbContext.SaveChangesAsync(ct);
             return;
         }
-        
+
         // Use ExecuteUpdate to avoid concurrency issues when multiple updates happen for the same consolidation date
         await dbContext.Dashboards
             .Where(d => d.ConsolidatedOn == command.Date)
             .ExecuteUpdateAsync(s => s.SetProperty(d => d.TotalPurchasesAmount, d => d.TotalPurchasesAmount + command.OrderAmount), ct);
-        
     }
 }
