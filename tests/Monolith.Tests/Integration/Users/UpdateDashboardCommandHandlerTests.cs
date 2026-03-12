@@ -20,6 +20,7 @@ public class UpdateDashboardCommandHandlerTests
             .Options;
 
         _dbContext = new UsersDbContext(usersOptions);
+        _dbContext.Database.EnsureDeleted();
         _dbContext.Database.EnsureCreated();
 
         Assert.True(_dbContext.Database.CanConnect());

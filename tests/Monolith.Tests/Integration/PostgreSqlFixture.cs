@@ -13,7 +13,7 @@ public sealed class PostgreSqlFixture : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
         .WithImage("postgres:16-alpine")
-        .WithDatabase("monolith_tests")
+        .WithDatabase($"monolith_tests_pg_{Guid.NewGuid():N}")
         .WithUsername("postgres")
         .WithPassword("postgres")
         .Build();

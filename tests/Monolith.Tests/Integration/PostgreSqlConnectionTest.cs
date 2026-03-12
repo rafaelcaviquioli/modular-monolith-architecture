@@ -19,14 +19,12 @@ public class PostgreSqlConnectionTest(PostgreSqlFixture fixture)
             .Options;
 
         await using var ordersDbContext = new OrdersDbContext(ordersOptions);
-        await ordersDbContext.Database.EnsureCreatedAsync();
 
         var usersOptions = new DbContextOptionsBuilder<UsersDbContext>()
             .UseNpgsql(fixture.ConnectionString)
             .Options;
 
         await using var usersDbContext = new UsersDbContext(usersOptions);
-        await usersDbContext.Database.EnsureCreatedAsync();
 
         Assert.True(await ordersDbContext.Database.CanConnectAsync());
         Assert.True(await usersDbContext.Database.CanConnectAsync());

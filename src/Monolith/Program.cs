@@ -60,4 +60,10 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.MapControllers();
 
+if (app.Environment.IsEnvironment("Testing"))
+{
+    await app.RunAsync();
+    return 0;
+}
+
 return await app.RunJasperFxCommands(args);
