@@ -28,7 +28,7 @@ Public surface of the module. All types here are `public`. No domain types allow
 
 Pure domain — **no framework dependencies**.
 
-- `Domain/Entities/{Name}.cs` — `internal class` extending `AggregateRoot<Guid>`
+- `Domain/Entities/{Name}.cs` — `public class` extending `AggregateRoot<Guid>`
   - Private parameterless constructor for EF Core
   - Static `Create(...)` factory returning `({Name} entity, {Name}CreatedDomainEvent domainEvent)` tuple
   - Properties with `private set`
@@ -41,24 +41,24 @@ One folder per feature. All types are `internal`.
 
 **`Features/Create{Name}/`**
 - `Create{Name}Command.cs` — `internal record` implementing `ICommand<Guid>` from `Monolith.BuildingBlocks.Application`
-- `Create{Name}CommandHandler.cs` — `internal class` with constructor-injected `{Name}DbContext`; `Handle` method returns `(Guid, OutgoingMessages)` where `OutgoingMessages` contains the domain event
-- `Create{Name}Controller.cs` — `internal class` extending `ControllerBase`, `[ApiController]`, `[Route("api/{names}")]`, `[HttpPost]`, constructor-injected `IMessageBus`; calls `bus.InvokeAsync<Guid>(new Create{Name}Command(...))`; returns `Ok(new { id })`
+- `Create{Name}CommandHandler.cs` — `public class` with constructor-injected `{Name}DbContext`; `Handle` method returns `(Guid, OutgoingMessages)` where `OutgoingMessages` contains the domain event
+- `Create{Name}Controller.cs` — `public class` extending `ControllerBase`, `[ApiController]`, `[Route("api/{names}")]`, `[HttpPost]`, constructor-injected `IMessageBus`; calls `bus.InvokeAsync<Guid>(new Create{Name}Command(...))`; returns `Ok(new { id })`
 
 **`Features/Get{Name}/`**
 - `Get{Name}Query.cs` — `internal record` implementing `IQuery<Get{Name}Dto?>` from `Monolith.BuildingBlocks.Application`
-- `Get{Name}QueryHandler.cs` — `internal class` with constructor-injected `{Name}DbContext`; `HandleAsync` returns `Get{Name}Dto?`; uses `AsNoTracking()`
-- `Get{Name}Controller.cs` — `internal class`, `[HttpGet("{id:guid}")]`, returns `NotFound()` or `Ok(dto)`
+- `Get{Name}QueryHandler.cs` — `public class` with constructor-injected `{Name}DbContext`; `HandleAsync` returns `Get{Name}Dto?`; uses `AsNoTracking()`
+- `Get{Name}Controller.cs` — `public class`, `[HttpGet("{id:guid}")]`, returns `NotFound()` or `Ok(dto)`
 
 ### 4. DomainEventHandlers — `Modules/{Name}/DomainEventHandlers/`
 
 Bridges domain events to integration events. All types are `internal`.
 
-- `Publish{Name}CreatedIntegrationEventHandler.cs` — `internal class`; `Handle({Name}CreatedDomainEvent domainEvent)` method that **returns** the integration event record directly (no `OutgoingMessages`, no `void`); Wolverine routes the returned record as the next message
+- `Publish{Name}CreatedIntegrationEventHandler.cs` — `public class`; `Handle({Name}CreatedDomainEvent domainEvent)` method that **returns** the integration event record directly (no `OutgoingMessages`, no `void`); Wolverine routes the returned record as the next message
 
 ### 5. Infrastructure — `Modules/{Name}/Infrastructure/Persistence/`
 
-- `{Name}DbContext.cs` — `internal class` extending `DbContext(DbContextOptions<{Name}DbContext>)`; `DbSet<{Name}>` property; `OnModelCreating` sets `modelBuilder.HasDefaultSchema("{names_lowercase}")` and applies configuration
-- `{Name}Configuration.cs` — `internal class` implementing `IEntityTypeConfiguration<{Name}>`; `ToTable`, `HasKey`, `Property` constraints
+- `{Name}DbContext.cs` — `public class` extending `DbContext(DbContextOptions<{Name}DbContext>)`; `DbSet<{Name}>` property; `OnModelCreating` sets `modelBuilder.HasDefaultSchema("{names_lowercase}")` and applies configuration
+- `{Name}Configuration.cs` — `public class` implementing `IEntityTypeConfiguration<{Name}>`; `ToTable`, `HasKey`, `Property` constraints
 
 ### 6. Module entry point — `Modules/{Name}/`
 
@@ -66,7 +66,7 @@ Bridges domain events to integration events. All types are `internal`.
   - Reads `configuration.GetConnectionString("DefaultConnection")` (throw if null)
   - Registers `{Name}DbContext` with `options.UseNpgsql(connectionString), optionsLifetime: ServiceLifetime.Singleton`
   - Registers `services.AddScoped<I{Name}Module, {Name}ModuleService>()`
-- `{Name}ModuleService.cs` — `internal class` implementing `I{Name}Module`; constructor-injected `IMessageBus`; delegates to Wolverine via `bus.InvokeAsync`
+- `{Name}ModuleService.cs` — `public class` implementing `I{Name}Module`; constructor-injected `IMessageBus`; delegates to Wolverine via `bus.InvokeAsync`
 
 ## What to Update
 

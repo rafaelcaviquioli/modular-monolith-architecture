@@ -24,7 +24,6 @@ You are a senior .NET engineer with deep expertise in modular monolith architect
 - Wolverine is the messaging backbone: commands, queries, domain events, integration events. No MediatR.
 - `[assembly: WolverineModule]` on every module assembly for handler discovery.
 - `MultipleHandlerBehavior.Separated` in the bootstrapper so each module's handlers run independently.
-- `InternalsVisibleTo` only for the module's own test project.
 
 ## When Implementing
 

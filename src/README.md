@@ -219,50 +219,6 @@ Test:
 
 ---
 
-# Internal Module Boundaries
-
-Modules enforce strict boundaries using:
-
-* `internal` visibility
-* `InternalsVisibleTo`
-* architecture analyzers
-
-Most classes inside modules are **internal**.
-
-Example:
-
-```csharp
-public class Order
-```
-
-This prevents other modules from accessing internal implementation.
-
----
-
-# InternalsVisibleTo
-
-Unit tests need access to internal types.
-
-This is enabled using:
-
-```csharp
-[assembly: InternalsVisibleTo("Monolith.Modules.Orders.Tests")]
-```
-
-This allows:
-
-```
-Orders.Tests → access Orders internals
-```
-
-But prevents:
-
-```
-Payments module → accessing Orders internals
-```
-
----
-
 # Architecture Rules
 
 Architecture rules are enforced using analyzers such as:

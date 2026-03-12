@@ -355,7 +355,7 @@ tests/
 
 | Rule | Description |
 |---|---|
-| Module isolation | Types in `Domain`, `Features`, `DomainEventHandlers`, `IntegrationEventHandlers`, and `Infrastructure` must not depend on another module's internals — only `*.Contracts.*` may cross module boundaries |
+| Module isolation | Types in `Domain`, `Features`, `DomainEventHandlers`, `IntegrationEventHandlers`, and `Infrastructure` must not depend on another module's — only `*.Contracts.*` may cross module boundaries |
 | Pure domain | Domain types must have zero dependencies on EF Core, Wolverine, or ASP.NET Core |
 | Domain boundary | Domain must not depend on `Features`, `Infrastructure`, or outer layers |
 | Contracts purity | Contracts must not expose domain types — only DTOs and integration events |
@@ -367,18 +367,6 @@ Run all tests:
 
 ```bash
 dotnet test ModularMonolith.slnx
-```
-
----
-
-# InternalsVisibleTo
-
-The test project needs access to internal types.
-Declared once in `AssemblyInfo.cs`:
-
-```csharp
-[assembly: WolverineModule]
-[assembly: InternalsVisibleTo("Monolith.Tests")]
 ```
 
 ---

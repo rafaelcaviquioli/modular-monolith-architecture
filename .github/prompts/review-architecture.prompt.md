@@ -20,7 +20,6 @@ Review the entire solution for architecture rule violations. Check every module 
 
 ### Visibility
 - Only Contracts types and module registration entry points are `public`
-- `InternalsVisibleTo` only targets the module's own test project
 
 ### Wolverine
 - No MediatR references anywhere

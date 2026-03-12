@@ -7,7 +7,7 @@ namespace Monolith.Modules.Users.IntegrationEventHandlers;
 /// <summary>
 /// Example of cross-module async communication.
 /// The Users module reacts to an event published by the Orders module
-/// without any direct reference to Orders internals.
+/// without any direct reference to Orders.
 /// </summary>
 public class UpdateDashboardOnOrderPlacedIntegrationEventHandler(ILogger<UpdateDashboardOnOrderPlacedIntegrationEventHandler> logger)
 {

@@ -23,7 +23,6 @@ Modular monolith with a **single assembly** (`Monolith`). All modules live in `s
 - `[assembly: WolverineModule]` declared once in `AssemblyInfo.cs` (single assembly)
 - Module registration: `services.AddXxxModule(configuration)` extension methods in `XxxModule.cs`
 - Integration events are plain records in `Modules/*/Contracts/IntegrationEvents/` — no marker interfaces
-- `[assembly: InternalsVisibleTo("Monolith.Tests")]` declared once in `AssemblyInfo.cs`
 
 ## Build and Test
 
